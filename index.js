@@ -1,6 +1,6 @@
 const request = require('request-promise');
 const fs = require('fs');
-const Shell = require('node-powershell');
+const {execSync} = require('child_process');
 const greenGuy = process.env.greenGuy || 'http://10.167.10.180:8080';
 const mkdirp = require('mkdirp');
 const os = require('os');
@@ -27,14 +27,23 @@ let buildTime = async ()=>{
 	console.log(target);
 	installing = target.name;
 	try{
-		const ps = new Shell({
-			executionPolicy:'Bypass',
-			noProfile:true
-		});
-		ps.addCommand(`.\\packless --org lcc --force --name ${target.name}`);
+		//const ps = new Shell({
+		//	executionPolicy:'Bypass',
+		//	noProfile:true
+		//});
+		//ps.addCommand(`.\\packless --org lcc --force --name ${target.name}`);
 		console.log(`Trying to install ${target.name}.`);
-		const result = await ps.invoke();
-		ps.dispose();
+		const result = execSync(`.\\packless.exe --org lcc --force --name ${target.name}`).toString();
+		console.log(result);
+		//let packless = spawn(`${__dirname}\\packless.exe`,['--org','lcc','--force','--name',target.name]);
+		//let result;
+		//packless.stdout.on('data',d=>{
+		//	console.log(d.toString());
+		//	result += d.toString();
+		//});
+		//await onExit(packless);
+		//const result = await ps.invoke();
+		//ps.dispose();
 		let success = didInstall(result);
 		sendReport(target.name,success,null,result);
 	}catch(e){
@@ -45,6 +54,24 @@ let buildTime = async ()=>{
 	buildTime();
 
 }
+
+
+function onExit(childProcess){
+        return new Promise((resolve, reject) => {
+                childProcess.once('exit', (code , signal) => {
+                        if (code === 0) {
+                                resolve(undefined);
+                        } else {
+                                reject(new Error('Exit with error code: '+code, + + ' ' + signal));
+                        }
+                });
+                childProcess.once('error', (err) => {
+                        reject(err);
+                });
+        });
+}
+
+
 let sendReport = (name,success,error,result)=>{
 	installing = null;
 	figuringOutInstall = false;

@@ -33,12 +33,15 @@ let buildTime = async ()=>{
 		});
 		ps.addCommand(`.\\packless --org lcc --force --name ${target.name}`);
 		console.log(`Trying to install ${target.name}.`);
-		const result = await ps.invoke();
+		const result = await ps.invoke().catch(e=>{
+			console.error(e);
+			sendReport(target.name,false,e,e);
+		});
 		ps.dispose();
 		let success = didInstall(result);
 		sendReport(target.name,success,null,result);
 	}catch(e){
-		console.log(e);
+		console.error(e);
 		sendReport(target.name,false,e,e);
 	}
 	console.log('Done');

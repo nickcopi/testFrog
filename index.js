@@ -1,7 +1,7 @@
 const request = require('request-promise');
 const fs = require('fs');
 const Shell = require('node-powershell');
-const greenGuy = process.env.greenGuy || 'http://localhost:8080';
+const greenGuy = process.env.greenGuy || 'http://10.167.10.180:8080';
 const mkdirp = require('mkdirp');
 const os = require('os');
 const hostname = os.hostname();
@@ -33,10 +33,7 @@ let buildTime = async ()=>{
 		});
 		ps.addCommand(`.\\packless --org lcc --force --name ${target.name}`);
 		console.log(`Trying to install ${target.name}.`);
-		const result = await ps.invoke().catch(e=>{
-			console.error(e);
-			sendReport(target.name,false,e,e);
-		});
+		const result = await ps.invoke();
 		ps.dispose();
 		let success = didInstall(result);
 		sendReport(target.name,success,null,result);

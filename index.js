@@ -1,7 +1,7 @@
 const request = require('request-promise');
 const fs = require('fs');
 const {execSync} = require('child_process');
-const greenGuy = process.env.greenGuy || 'http://10.167.10.180:8080';
+const greenGuy = process.env.greenGuy || 'http://10.167.10.144';
 const mkdirp = require('mkdirp');
 const os = require('os');
 const hostname = os.hostname();
@@ -34,7 +34,7 @@ let buildTime = async ()=>{
 		//ps.addCommand(`.\\packless --org lcc --force --name ${target.name}`);
 		console.log(`Trying to install ${target.name}.`);
 		const result = execSync(`.\\packless.exe --org lcc --force --name ${target.name} --noprogress`).toString();
-		console.log(result);
+		console.log('result: ' + result);
 		//let packless = spawn(`${__dirname}\\packless.exe`,['--org','lcc','--force','--name',target.name]);
 		//let result;
 		//packless.stdout.on('data',d=>{
@@ -47,8 +47,7 @@ let buildTime = async ()=>{
 		let success = didInstall(result);
 		sendReport(target.name,success,null,result);
 	}catch(e){
-		console.error(e);
-		sendReport(target.name,false,e,e);
+		sendReport(target.name,false,e.output[2].toString(),e.output[2].toString());
 	}
 	console.log('Done');
 	buildTime();

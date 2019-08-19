@@ -12,14 +12,28 @@ let figuringOutInstall = false;
 let buildTime = async ()=>{
 	if(figuringOutInstall) return console.log('Figuring out install ' + (installing?`of ${installing}`:'...'));
 	figuringOutInstall = true;
-	let queue = JSON.parse(await request(greenGuy + '/getTestQueue').catch(e=>console.log(e)));
+	let queue;
+	try{
+		queue = JSON.parse(await request(greenGuy + '/getTestQueue').catch(e=>console.log(e)));
+	} catch(e){
+		//console.error(e.body);
+		console.error('Cannot reach queue server, aborting this attempt.');
+		return figuringOutInstall = false;
+	}
 	console.log(queue);
 	let target;
 	if(installing) return console.log(`Ignoring queue, must finish installing ${installing}.`);
 	for(const q of queue){
 		if(target) continue;
 		if(q.dibs) continue;
-		const dibsStatus = JSON.parse(await callDibs(q.name));
+		let dibsStatus;
+		try{
+			dibsStatus = JSON.parse(await callDibs(q.name));
+		} catch(e){
+			//console.error(e.body);
+			console.error('Cannot reach dibs server, aborting this attempt.');
+			return figuringOutInstall = false;
+		}
 		if(!dibsStatus.success) continue;
 		target = q;
 	}

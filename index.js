@@ -47,7 +47,7 @@ let buildTime = async ()=>{
 		//});
 		//ps.addCommand(`.\\packless --org lcc --force --name ${target.name}`);
 		console.log(`Trying to install ${target.name}.`);
-		const result = execSync(`.\\packless.exe --org lcc --force --name ${target.name} --noprogress`).toString();
+		const result = execSync(`.\\packless.exe --org lcc --force --name ${target.name} --noprogress --sheet`).toString();
 		console.log('result: ' + result);
 		//let packless = spawn(`${__dirname}\\packless.exe`,['--org','lcc','--force','--name',target.name]);
 		//let result;

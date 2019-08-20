@@ -1,7 +1,7 @@
 const request = require('request-promise');
 const fs = require('fs');
 const {execSync} = require('child_process');
-const greenGuy = process.env.greenGuy || 'http://10.167.10.144';
+const greenGuy = process.env.greenGuy || 'http://10.167.10.70';
 const mkdirp = require('mkdirp');
 const os = require('os');
 const hostname = os.hostname();

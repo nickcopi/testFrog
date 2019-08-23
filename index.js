@@ -1,6 +1,6 @@
 const request = require('request-promise');
 const fs = require('fs');
-const {execSync} = require('child_process');
+const {execSync,exec} = require('child_process');
 const greenGuy = process.env.greenGuy || 'http://10.167.10.70';
 const mkdirp = require('mkdirp');
 const os = require('os');
@@ -8,9 +8,15 @@ const hostname = os.hostname();
 
 let installing = null;
 let figuringOutInstall = false;
+let installTimer = 0;
+/*timeout in minutes*/
+const TIMEOUT_TIME = 20;
 
 let buildTime = async ()=>{
-	if(figuringOutInstall) return console.log('Figuring out install ' + (installing?`of ${installing}`:'...'));
+	if(figuringOutInstall){
+		await incrementTimer();
+		return console.log('Figuring out install ' + (installing?`of ${installing}`:'...'));
+	}
 	figuringOutInstall = true;
 	let queue;
 	try{
@@ -22,7 +28,10 @@ let buildTime = async ()=>{
 	}
 	console.log(queue);
 	let target;
-	if(installing) return console.log(`Ignoring queue, must finish installing ${installing}.`);
+	if(installing) {
+		await incrementTimer();
+		return console.log(`Ignoring queue, must finish installing ${installing}.`);
+	}
 	for(const q of queue){
 		if(target) continue;
 		if(q.dibs) continue;
@@ -40,54 +49,51 @@ let buildTime = async ()=>{
 	if(!target) return figuringOutInstall = false;
 	console.log(target);
 	installing = target.name;
-	try{
-		//const ps = new Shell({
-		//	executionPolicy:'Bypass',
-		//	noProfile:true
-		//});
-		//ps.addCommand(`.\\packless --org lcc --force --name ${target.name}`);
-		console.log(`Trying to install ${target.name}.`);
-		const result = execSync(`.\\packless.exe --org lcc --force --name ${target.name} --noprogress --sheet https://docs.google.com/spreadsheets/d/e/2PACX-1vSzzYOTfYOBVhcXEdsPqnVTxyfyskpJLY8W-EEV5qcMBPJ1TLs8yHi28z7ChXlNnYxv62_YB9NE9bkG/pub?gid=827468310&single=true&output=csv`).toString();
-		console.log('result: ' + result);
-		//let packless = spawn(`${__dirname}\\packless.exe`,['--org','lcc','--force','--name',target.name]);
-		//let result;
-		//packless.stdout.on('data',d=>{
-		//	console.log(d.toString());
-		//	result += d.toString();
-		//});
-		//await onExit(packless);
-		//const result = await ps.invoke();
-		//ps.dispose();
-		let success = didInstall(result);
-		sendReport(target.name,success,null,result);
-	}catch(e){
-		sendReport(target.name,false,e.output[2].toString(),e.output[2].toString());
-	}
-	console.log('Done');
-	buildTime();
+	console.log(`Trying to install ${target.name}.`);
+	exec(`.\\packless.exe --org lcc --force --name ${target.name} --noprogress --sheet "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzzYOTfYOBVhcXEdsPqnVTxyfyskpJLY8W-EEV5qcMBPJ1TLs8yHi28z7ChXlNnYxv62_YB9NE9bkG/pub?gid=827468310&single=true&output=csv"`,
+		(stdout,stderr)=>{
+			if(stderr){
+				sendReport(target.name,false,stderr.toString(),stderr.toString());
+				buildTime();
+				return;
+			}
+			if(typeof(stdout === 'object')) stdout = JSON.stringify(stdout);
+			let success = didInstall(stdout);
+			sendReport(target.name,success,null,stdout);
+			console.log('Done');
+			buildTime();
+
+		}
+	);
+//		//const ps = new Shell({
+//		//	executionPolicy:'Bypass',
+//		//	noProfile:true
+//		//});
+//		//ps.addCommand(`.\\packless --org lcc --force --name ${target.name}`);
+//		console.log(`Trying to install ${target.name}.`);
+//		const result = execSync(`.\\packless.exe --org lcc --force --name ${target.name} --noprogress --sheet "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzzYOTfYOBVhcXEdsPqnVTxyfyskpJLY8W-EEV5qcMBPJ1TLs8yHi28z7ChXlNnYxv62_YB9NE9bkG/pub?gid=827468310&single=true&output=csv"`).toString();
+//		console.log('result: ' + result);
+//		//let packless = spawn(`${__dirname}\\packless.exe`,['--org','lcc','--force','--name',target.name]);
+//		//let result;
+//		//packless.stdout.on('data',d=>{
+//		//	console.log(d.toString());
+//		//	result += d.toString();
+//		//});
+//		//await onExit(packless);
+//		//const result = await ps.invoke();
+//		//ps.dispose();
+//	}catch(e){
+//	}
+//	console.log('Done');
+//	buildTime();
 
 }
 
 
-function onExit(childProcess){
-        return new Promise((resolve, reject) => {
-                childProcess.once('exit', (code , signal) => {
-                        if (code === 0) {
-                                resolve(undefined);
-                        } else {
-                                reject(new Error('Exit with error code: '+code, + + ' ' + signal));
-                        }
-                });
-                childProcess.once('error', (err) => {
-                        reject(err);
-                });
-        });
-}
-
-
-let sendReport = (name,success,error,result)=>{
+let sendReport = async (name,success,error,result)=>{
 	installing = null;
 	figuringOutInstall = false;
+	installTimer = 0;
 	console.log(result);
 	const options = {
 		method:'POST',
@@ -103,7 +109,7 @@ let sendReport = (name,success,error,result)=>{
 			hostname
 		})
 	}
-	request(options).catch(e=>console.log(e));
+	await request(options).catch(e=>console.log(e));
 }
 let didInstall = result=>{
 	let success = false;
@@ -138,11 +144,27 @@ let callDibs = async name =>{
 
 
 }
+
+
+let incrementTimer = async ()=>{
+	installTimer++;
+	if(installTimer >= TIMEOUT_TIME){
+		console.log('Timeout exceeded');
+		await sendReport(installing,false,null,`Timeout of ${TIMEOUT_TIME} exceeded.`);
+		doReboot();
+		process.exit();
+	}
+}
+
+let doReboot = ()=>{
+	execSync('shutdown /t 0 /r /f');
+}
+
 let startSchedule = ()=>{
 	setInterval(()=>{
 		buildTime();
 	},1000 * 60);
 };
-buildTime();
 startSchedule();
+buildTime();
 

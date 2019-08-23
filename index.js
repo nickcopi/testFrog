@@ -51,9 +51,9 @@ let buildTime = async ()=>{
 	installing = target.name;
 	console.log(`Trying to install ${target.name}.`);
 	exec(`.\\packless.exe --org lcc --force --name ${target.name} --noprogress --sheet "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzzYOTfYOBVhcXEdsPqnVTxyfyskpJLY8W-EEV5qcMBPJ1TLs8yHi28z7ChXlNnYxv62_YB9NE9bkG/pub?gid=827468310&single=true&output=csv"`,
-		(stdout,stderr)=>{
+		(stderr,stdout)=>{
 			if(stderr){
-				sendReport(target.name,false,stderr.toString(),stderr.toString());
+				sendReport(target.name,false,stderr.toString(),stdout.toString());
 				buildTime();
 				return;
 			}
@@ -150,7 +150,7 @@ let incrementTimer = async ()=>{
 	installTimer++;
 	if(installTimer >= TIMEOUT_TIME){
 		console.log('Timeout exceeded');
-		await sendReport(installing,false,null,`Timeout of ${TIMEOUT_TIME} exceeded.`);
+		await sendReport(installing,false,null,`Timeout of ${TIMEOUT_TIME}m exceeded.`);
 		doReboot();
 		process.exit();
 	}

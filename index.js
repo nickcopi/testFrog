@@ -51,15 +51,15 @@ let buildTime = async ()=>{
 	installing = target.name;
 	console.log(`Trying to install ${target.name}.`);
 	exec(`.\\packless.exe --org lcc --force --name ${target.name} --noprogress --sheet "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzzYOTfYOBVhcXEdsPqnVTxyfyskpJLY8W-EEV5qcMBPJ1TLs8yHi28z7ChXlNnYxv62_YB9NE9bkG/pub?gid=827468310&single=true&output=csv"`,
-		(stderr,stdout)=>{
+		async (stderr,stdout)=>{
 			if(stderr){
-				sendReport(target.name,false,stderr.toString(),stdout.toString());
+				await sendReport(target.name,false,stderr.toString(),stdout.toString());
 				buildTime();
 				return;
 			}
 			if(typeof(stdout === 'object')) stdout = JSON.stringify(stdout);
 			let success = didInstall(stdout);
-			sendReport(target.name,success,null,stdout);
+			await sendReport(target.name,success,null,stdout);
 			console.log('Done');
 			buildTime();
 
@@ -91,6 +91,7 @@ let buildTime = async ()=>{
 
 
 let sendReport = async (name,success,error,result)=>{
+	console.log(`sendReport called with name ${name}`);
 	installing = null;
 	figuringOutInstall = false;
 	installTimer = 0;

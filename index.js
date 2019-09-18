@@ -10,7 +10,7 @@ let installing = null;
 let figuringOutInstall = false;
 let installTimer = 0;
 /*timeout in minutes*/
-const TIMEOUT_TIME = 20;
+const TIMEOUT_TIME = 40;
 
 let buildTime = async ()=>{
 	if(figuringOutInstall){
@@ -50,7 +50,7 @@ let buildTime = async ()=>{
 	console.log(target);
 	installing = target.name;
 	console.log(`Trying to install ${target.name}.`);
-	exec(`.\\packless.exe --org lcc --force --name ${target.name} --noprogress --sheet "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzzYOTfYOBVhcXEdsPqnVTxyfyskpJLY8W-EEV5qcMBPJ1TLs8yHi28z7ChXlNnYxv62_YB9NE9bkG/pub?gid=827468310&single=true&output=csv"`,
+	exec(`.\\packless.exe --failonstderr --org lcc --force --name ${target.name} --noprogress --sheet "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzzYOTfYOBVhcXEdsPqnVTxyfyskpJLY8W-EEV5qcMBPJ1TLs8yHi28z7ChXlNnYxv62_YB9NE9bkG/pub?gid=827468310&single=true&output=csv"`,
 		async (stderr,stdout)=>{
 			if(stderr){
 				await sendReport(target.name,false,stderr.toString(),stdout.toString());

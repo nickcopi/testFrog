@@ -1,0 +1,1 @@
+C:\Users\LCC-TuPack-Build\Downloads\cmder\vendor\conemu-maximus5\ConEmu64.exe /cmd cmd /k "cd C:\Users\LCC-TuPack-Build\testFrog && npm start"

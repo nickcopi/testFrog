@@ -18,4 +18,4 @@ else
    exit
    }
 
-& 'C:\Users\LCC-TuPack-Build\testFrog\start.bat'
+& 'C:\Users\LCC-TuPack-Build\testFrog\startrunner.bat'

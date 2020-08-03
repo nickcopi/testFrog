@@ -1,7 +1,7 @@
 const request = require('request-promise');
 const fs = require('fs');
 const {execSync,exec} = require('child_process');
-const greenGuy = process.env.greenGuy || 'http://10.167.10.70';
+const greenGuy = process.env.greenGuy || 'http://10.167.10.144';
 const mkdirp = require('mkdirp');
 const os = require('os');
 const hostname = os.hostname();
@@ -50,7 +50,7 @@ let buildTime = async ()=>{
 	console.log(target);
 	installing = target.name;
 	console.log(`Trying to install ${target.name}.`);
-	exec(`.\\packless.exe --failonstderr -t ${TIMEOUT_TIME*60} --org lcc --force --name ${target.name} --noprogress --sheet "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzzYOTfYOBVhcXEdsPqnVTxyfyskpJLY8W-EEV5qcMBPJ1TLs8yHi28z7ChXlNnYxv62_YB9NE9bkG/pub?gid=827468310&single=true&output=csv"`,
+	exec(`.\\packless.exe --failonstderr ${TIMEOUT_TIME>60?'-t 0':''} --org lcc --force --name ${target.name} --noprogress --sheet "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzzYOTfYOBVhcXEdsPqnVTxyfyskpJLY8W-EEV5qcMBPJ1TLs8yHi28z7ChXlNnYxv62_YB9NE9bkG/pub?gid=827468310&single=true&output=csv"`,
 		async (stderr,stdout)=>{
 			if(stderr){
 				await sendReport(target.name,false,stderr.toString(),stdout.toString());
